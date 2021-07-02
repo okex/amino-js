@@ -1,8 +1,11 @@
 package src
 
 import (
+	"fmt"
 	rootmulti "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/store/rootmulti"
+	"github.com/cosmos/amino-js/go/lib/exchain/ethcmn"
 	iavl "github.com/cosmos/amino-js/go/lib/tendermint/iavl"
+	"math/big"
 
 	crypto "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto"
 	keys "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto/keys"
@@ -19,6 +22,7 @@ import (
 	params "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/x/params/types"
 	slashing "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/x/slashing"
 	staking "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/x/staking/types"
+	evmtypes "github.com/cosmos/amino-js/go/lib/exchain/types"
 
 	tm_crypto "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/crypto"
 	tm_ed25519 "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/crypto/ed25519"
@@ -266,6 +270,55 @@ func EncodeTx(bz []byte, lengthPrefixed bool) (bz2 []byte, err error) {
 		bz2, err = codec.MarshalBinaryLengthPrefixed(o)
 	} else {
 		bz2, err = codec.MarshalBinaryBare(o)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+func EncodeEthereumTx(bz []byte, lengthPrefixed bool) (bz2 []byte, err error) {
+	type TmpTxData struct {
+		AccountNonce uint64   `json:"nonce"`
+		Price        *big.Int `json:"gasPrice"`
+		GasLimit     uint64   `json:"gas"`
+		Recipient    string   `json:"to" rlp:"nil"` // nil means contract creation
+		Amount       *big.Int `json:"value"`
+		Payload      []byte   `json:"input"`
+
+		// signature values
+		V *big.Int `json:"v"`
+		R *big.Int `json:"r"`
+		S *big.Int `json:"s"`
+
+		// hash is only used when marshaling to JSON
+		Hash *ethcmn.Hash `json:"hash" rlp:"-"`
+	}
+	var o TmpTxData
+	err = codec.UnmarshalJSON(bz, &o)
+	if err != nil {
+		return nil, err
+	}
+
+	var tx evmtypes.MsgEthereumTx
+	tx.Data.AccountNonce = o.AccountNonce
+	tx.Data.Price = o.Price
+	tx.Data.GasLimit = o.GasLimit
+	addr := ethcmn.HexToAddress(o.Recipient)
+	tx.Data.Recipient = &addr
+	tx.Data.Amount = o.Amount
+	tx.Data.Payload = o.Payload
+	tx.Data.V = o.V
+	tx.Data.R = o.R
+	tx.Data.S = o.S
+	tx.Data.Hash = o.Hash
+	fmt.Println(tx.Data.String())
+	if lengthPrefixed {
+		bz2, err = codec.MarshalBinaryLengthPrefixed(tx)
+	} else {
+		bz2, err = codec.MarshalBinaryBare(tx)
 	}
 
 	if err != nil {

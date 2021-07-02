@@ -22,6 +22,7 @@ import (
 	tm_multisig "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/crypto/multisig"
 	tm_secp256k1 "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/crypto/secp256k1"
 
+	evmtypes "github.com/cosmos/amino-js/go/lib/exchain/types"
 	tm_blockchain "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/blockchain"
 	tm_consensus "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/consensus"
 	tm_evidence "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/evidence"
@@ -30,7 +31,6 @@ import (
 	tm_pex "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/p2p/pex"
 	tm_privval "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/privval"
 	tm_types "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/types"
-
 	amino "github.com/tendermint/go-amino"
 )
 
@@ -110,6 +110,11 @@ func RegisterCodec(codec *amino.Codec) {
 	codec.RegisterConcrete(staking.MsgDelegate{},        CosmosSdkMsgDelegate, nil)
 	codec.RegisterConcrete(staking.MsgUndelegate{},      CosmosSdkMsgUndelegate, nil)
 	codec.RegisterConcrete(staking.MsgBeginRedelegate{}, CosmosSdkMsgBeginRedelegate, nil)
+
+	// okex/exchain/x/evm/types/codec.go
+
+	codec.RegisterConcrete(evmtypes.MsgEthereumTx{}, EthermintMsgEthereumTx, nil)
+	codec.RegisterConcrete(evmtypes.TxData{}, EthermintTxData, nil)
 
 	// tendermint/tendermint/blockchain/reactor.go
 
@@ -219,3 +224,4 @@ func RegisterCodec(codec *amino.Codec) {
 	codec.RegisterConcrete(tm_types.MockBadEvidence{},        TendermintMockBadEvidence, nil)
 	// @formatter:on
 }
+

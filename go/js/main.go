@@ -70,6 +70,7 @@ func main() {
 	exports.Set("encodeMultiInfo",                      EncodeMultiInfo)
 	exports.Set("encodeMsg",                            EncodeMsg)
 	exports.Set("encodeTx",                             EncodeTx)
+	exports.Set("encodeEthereumTx",                     EncodeEthereumTx)
 	exports.Set("encodeAccount",                        EncodeAccount)
 	exports.Set("encodeVestingAccount",                 EncodeVestingAccount)
 	exports.Set("encodeBaseAccount",                    EncodeBaseAccount)
