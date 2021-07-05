@@ -546,6 +546,17 @@ export function encodeMsg (json: JSONBytes, lengthPrefixed: boolean): AminoBytes
 export function encodeTx (json: JSONBytes, lengthPrefixed: boolean): AminoBytes;
 
 /**
+ * Encode a `Ethereum Tx` object from JSON to Amino
+ *
+ * @param   json           - JSON-encoded `Tx` object
+ * @param   lengthPrefixed - if `true`, use length-prefixed Amino encoding; if `false`, use bare Amino encoding
+ *
+ * @returns Amino-encoded `Tx` object
+ * @throws  will throw if encoding fails
+ */
+export function encodeEthereumTx (json: JSONBytes, lengthPrefixed: boolean): AminoBytes;
+
+/**
  * Encode a `Account` object from JSON to Amino
  *
  * @param   json           - JSON-encoded `Account` object
@@ -1667,6 +1678,17 @@ export function decodeMsg (amino: AminoBytes, lengthPrefixed: boolean): JSONByte
  * @throws  will throw if decoding fails
  */
 export function decodeTx (amino: AminoBytes, lengthPrefixed: boolean): JSONBytes;
+
+/**
+ * Decode a `Ethereum Tx` object from Amino to JSON
+ *
+ * @param   amino          - Amino-encoded `object ` object
+ * @param   lengthPrefixed - if true, use length-prefixed Amino decoding; if false, use bare Amino decoding
+ *
+ * @returns JSON-encoded `Tx` object
+ * @throws  will throw if decoding fails
+ */
+export function decodeEthereumTx (amino: AminoBytes, lengthPrefixed: boolean): JSONBytes;
 
 /**
  * Decode a `Account` object from Amino to JSON

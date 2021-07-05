@@ -105,6 +105,7 @@ import {
     VoteSetMaj23Message,
     WALMessage
 } from './types';
+import {EthereumTx} from "./types/eth";
 
 /**
  * Marshal a `MultiStoreProofOp` object to Amino
@@ -270,6 +271,20 @@ export function marshalMsg (o: Msg, lengthPrefixed: boolean = true): AminoBytes 
  * @throws  will throw if encoding fails
  */
 export function marshalTx (o: Tx, lengthPrefixed: boolean = true): AminoBytes {
+    const json = jsonToBytes(o);
+    return encodeType.encodeTx(json, lengthPrefixed);
+}
+
+/**
+ * Marshal a `Ethereum Tx` object to Amino
+ *
+ * @param   o              - `Tx` object
+ * @param   lengthPrefixed - if `true`, use length-prefixed Amino encoding; if `false`, use bare Amino encoding
+ *
+ * @returns Amino-encoded `Tx` object
+ * @throws  will throw if encoding fails
+ */
+export function marshalEthereumTx (o: EthereumTx, lengthPrefixed: boolean = true): AminoBytes {
     const json = jsonToBytes(o);
     return encodeType.encodeTx(json, lengthPrefixed);
 }

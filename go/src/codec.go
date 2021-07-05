@@ -2,7 +2,7 @@ package src
 
 import (
 	"github.com/cosmos/amino-js/go/lib"
-	"github.com/cosmos/amino-js/go/lib/exchain/types"
+	"github.com/cosmos/amino-js/go/lib/exchain/ethtypes"
 	"github.com/tendermint/go-amino"
 )
 
@@ -12,7 +12,7 @@ func init() {
 	codec = amino.NewCodec()
 	lib.RegisterCodec(codec)
 	codec.Seal()
-	types.InitCdc(codec)
+	ethtypes.InitCdc(codec)
 }
 
 func GetCdc() *amino.Codec {
