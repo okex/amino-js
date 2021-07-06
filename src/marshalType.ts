@@ -286,7 +286,7 @@ export function marshalTx (o: Tx, lengthPrefixed: boolean = true): AminoBytes {
  */
 export function marshalEthereumTx (o: EthereumTx, lengthPrefixed: boolean = true): AminoBytes {
     const json = jsonToBytes(o);
-    return encodeType.encodeTx(json, lengthPrefixed);
+    return encodeType.encodeEthereumTx(json, lengthPrefixed);
 }
 
 /**

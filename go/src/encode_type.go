@@ -1,15 +1,18 @@
 package src
 
 import (
+	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
+	crypto "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto"
+	keys "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto/keys"
+	hd "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto/keys/hd"
 	rootmulti "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/store/rootmulti"
 	"github.com/cosmos/amino-js/go/lib/exchain/ethcmn"
 	iavl "github.com/cosmos/amino-js/go/lib/tendermint/iavl"
 	"math/big"
-
-	crypto "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto"
-	keys "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto/keys"
-	hd "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto/keys/hd"
+	"strconv"
 
 	types "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/types"
 
@@ -281,38 +284,71 @@ func EncodeTx(bz []byte, lengthPrefixed bool) (bz2 []byte, err error) {
 
 func EncodeEthereumTx(bz []byte, lengthPrefixed bool) (bz2 []byte, err error) {
 	type TmpTxData struct {
-		AccountNonce uint64   `json:"nonce"`
-		Price        *big.Int `json:"gasPrice"`
-		GasLimit     uint64   `json:"gas"`
+		AccountNonce string   `json:"nonce"`
+		Price        string `json:"gasPrice"`
+		GasLimit     string   `json:"gas"`
 		Recipient    string   `json:"to" rlp:"nil"` // nil means contract creation
-		Amount       *big.Int `json:"value"`
-		Payload      []byte   `json:"input"`
+		Amount       string `json:"value"`
+		Payload      string   `json:"input"`
 
 		// signature values
-		V *big.Int `json:"v"`
-		R *big.Int `json:"r"`
-		S *big.Int `json:"s"`
+		V string `json:"v"`
+		R string `json:"r"`
+		S string `json:"s"`
 
 		// hash is only used when marshaling to JSON
 		Hash *ethcmn.Hash `json:"hash" rlp:"-"`
 	}
 	var o TmpTxData
-	err = codec.UnmarshalJSON(bz, &o)
+	err = json.Unmarshal(bz, &o)
 	if err != nil {
 		return nil, err
 	}
 
+	err2 := errors.New("invalid params")
+	price, res := new(big.Int).SetString(o.Price, 10)
+	if !res {
+		return nil, err2
+	}
+	amount, res := new(big.Int).SetString(o.Amount, 10)
+	if !res {
+		return nil, err2
+	}
+	v, res := new(big.Int).SetString(o.V, 10)
+	if !res {
+		return nil, err2
+	}
+	r, res := new(big.Int).SetString(o.R, 10)
+	if !res {
+		return nil, err2
+	}
+	s, res := new(big.Int).SetString(o.S, 10)
+	if !res {
+		return nil, err2
+	}
+	nonce, err := strconv.Atoi(o.AccountNonce)
+	if err != nil {
+		return nil, err
+	}
+	gas, err := strconv.Atoi(o.GasLimit)
+	if err != nil {
+		return nil, err
+	}
+	payLoad, err := hex.DecodeString(o.Payload)
+	if err != nil {
+		return nil, err
+	}
 	var tx evmtypes.MsgEthereumTx
-	tx.Data.AccountNonce = o.AccountNonce
-	tx.Data.Price = o.Price
-	tx.Data.GasLimit = o.GasLimit
+	tx.Data.AccountNonce = uint64(nonce)
+	tx.Data.Price = price
+	tx.Data.GasLimit = uint64(gas)
 	addr := ethcmn.HexToAddress(o.Recipient)
 	tx.Data.Recipient = &addr
-	tx.Data.Amount = o.Amount
-	tx.Data.Payload = o.Payload
-	tx.Data.V = o.V
-	tx.Data.R = o.R
-	tx.Data.S = o.S
+	tx.Data.Amount = amount
+	tx.Data.Payload = payLoad
+	tx.Data.V = v
+	tx.Data.R = r
+	tx.Data.S = s
 	tx.Data.Hash = o.Hash
 	fmt.Println(tx.Data.String())
 	if lengthPrefixed {

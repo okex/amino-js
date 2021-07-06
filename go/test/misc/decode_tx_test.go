@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"github.com/cosmos/amino-js/go/lib/exchain/ethcmn"
 	"github.com/cosmos/amino-js/go/src"
-	"math/big"
+	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/crypto/tmhash"
 	"strings"
 	"testing"
 )
@@ -34,44 +35,33 @@ func TestDecodeTx(t *testing.T) {
 
 func TestEncodeEthereumTx(t *testing.T) {
 	type TmpTxData struct {
-		AccountNonce uint64   `json:"nonce"`
-		Price        *big.Int `json:"gasPrice"`
-		GasLimit     uint64   `json:"gas"`
+		AccountNonce string   `json:"nonce"`
+		Price        string `json:"gasPrice"`
+		GasLimit     string   `json:"gas"`
 		Recipient    string   `json:"to" rlp:"nil"` // nil means contract creation
-		Amount       *big.Int `json:"value"`
-		Payload      []byte   `json:"input"`
+		Amount       string `json:"value"`
+		Payload      string   `json:"input"`
 
 		// signature values
-		V *big.Int `json:"v"`
-		R *big.Int `json:"r"`
-		S *big.Int `json:"s"`
+		V string `json:"v"`
+		R string `json:"r"`
+		S string `json:"s"`
 
 		// hash is only used when marshaling to JSON
 		Hash *ethcmn.Hash `json:"hash" rlp:"-"`
 	}
-	amount, res := new(big.Int).SetString("1000000000000000000000", 10)
-	if !res {
-		panic("invalid r")
-	}
-	r, res := new(big.Int).SetString("96962823357929674581456147164326828477780712855340773268809156628353093709286", 10)
-	if !res {
-		panic("invalid r")
-	}
-	s, res := new(big.Int).SetString("4240042300301810108734890837836473848765664079489718075672737221057986070883", 10)
-	if !res {
-		panic("invalid r")
-	}
-	tx := TmpTxData{
-		AccountNonce: 0,
-		Price: big.NewInt(100000000),
-		GasLimit: 21000,
-		Recipient: "0xF76b10a1f318825173ad9F83f112e570782bD83E",
-		Amount: amount,
-		Payload: []byte(""),
 
-		V: big.NewInt(51),
-		R: r,
-		S: s,
+	tx := TmpTxData{
+		AccountNonce: "0",
+		Price: "100000000",
+		GasLimit: "21000",
+		Recipient: "0xF76b10a1f318825173ad9F83f112e570782bD83E",
+		Amount: "1000000000000000000000",
+		Payload: hex.EncodeToString([]byte("")),
+
+		V: "51",
+		R: "96962823357929674581456147164326828477780712855340773268809156628353093709286",
+		S: "4240042300301810108734890837836473848765664079489718075672737221057986070883",
 	}
 	json_str := src.GetCdc().MustMarshalJSON(tx)
 	fmt.Println(string(json_str))
@@ -80,5 +70,10 @@ func TestEncodeEthereumTx(t *testing.T) {
 		panic(err)
 	}
 	fmt.Println(base64.StdEncoding.EncodeToString(amino_data))
-	fmt.Println(strings.ToUpper(hex.EncodeToString(amino_data)))
+	hexRes := strings.ToUpper(hex.EncodeToString(amino_data))
+	fmt.Println(hexRes)
+	require.Equal(t, "E50125A6BE540ADE0112093130303030303030301888A4012214F76B10A1F318825173AD9F83F112E570782BD83E2A16313030303030303030303030303030303030303030303A023531424D39363936323832333335373932393637343538313435363134373136343332363832383437373738303731323835353334303737333236383830393135363632383335333039333730393238364A4C34323430303432333030333031383130313038373334383930383337383336343733383438373635363634303739343839373138303735363732373337323231303537393836303730383833", hexRes)
+	hash := "0x" + hex.EncodeToString(tmhash.Sum(amino_data))
+	fmt.Println(hash)
+	require.Equal(t, "0xbe648799632a6db88b81fdd48830087f2695f6190c63771e732f29a565b82b56", hash)
 }
