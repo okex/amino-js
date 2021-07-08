@@ -334,6 +334,9 @@ func EncodeEthereumTx(bz []byte, lengthPrefixed bool) (bz2 []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
+	if o.Payload[:2] == "0x" {
+	    o.Payload = o.Payload[2:]
+	}
 	payLoad, err := hex.DecodeString(o.Payload)
 	if err != nil {
 		return nil, err
