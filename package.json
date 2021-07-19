@@ -1,6 +1,6 @@
 {
-  "name": "@tendermint/amino-js",
-  "description": "go-amino + GopherJS + TypeScript",
+  "name": "@okexchain/amino-js",
+  "description": "go-amino + GopherJS + TypeScript, base on tendermint/amino-js",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
   "engines": {
     "node": ">=10"
   },
-  "version": "0.6.2",
+  "version": "0.1.0",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@tendermint/belt": "0.2.1",
-    "@tendermint/types": "0.1.1",
+    "@tendermint/types": "^0.1.1",
     "@types/crypto-js": "^4.0.1",
     "crypto-js": "^4.0.0"
   },
@@ -54,7 +54,7 @@
     "eslint": "6.6.0",
     "eslint-loader": "3.0.2",
     "eslint-plugin-node": "10.0.0",
-    "jest": "24.9.0",
+    "jest": "^24.9.0",
     "ts-jest": "24.1.0",
     "ts-loader": "6.2.1",
     "ts-node": "8.4.1",
