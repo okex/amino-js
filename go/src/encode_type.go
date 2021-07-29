@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	crypto "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto"
 	keys "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto/keys"
 	hd "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto/keys/hd"
@@ -353,7 +352,6 @@ func EncodeEthereumTx(bz []byte, lengthPrefixed bool) (bz2 []byte, err error) {
 	tx.Data.R = r
 	tx.Data.S = s
 	tx.Data.Hash = o.Hash
-	fmt.Println(tx.Data.String())
 	if lengthPrefixed {
 		bz2, err = codec.MarshalBinaryLengthPrefixed(tx)
 	} else {
