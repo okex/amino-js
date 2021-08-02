@@ -344,8 +344,13 @@ func EncodeEthereumTx(bz []byte, lengthPrefixed bool) (bz2 []byte, err error) {
 	tx.Data.AccountNonce = uint64(nonce)
 	tx.Data.Price = price
 	tx.Data.GasLimit = uint64(gas)
-	addr := ethcmn.HexToAddress(o.Recipient)
-	tx.Data.Recipient = &addr
+	if o.Recipient == "" {
+	    tx.Data.Recipient = nil
+	} else {
+	    addr := ethcmn.HexToAddress(o.Recipient)
+        tx.Data.Recipient = &addr
+	}
+
 	tx.Data.Amount = amount
 	tx.Data.Payload = payLoad
 	tx.Data.V = v
