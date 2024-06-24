@@ -1,12 +1,17 @@
 package src
 
 import (
-	rootmulti "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/store/rootmulti"
-	iavl "github.com/cosmos/amino-js/go/lib/tendermint/iavl"
-
+	"encoding/hex"
+	"encoding/json"
+	"errors"
 	crypto "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto"
 	keys "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto/keys"
 	hd "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/crypto/keys/hd"
+	rootmulti "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/store/rootmulti"
+	"github.com/cosmos/amino-js/go/lib/exchain/ethcmn"
+	iavl "github.com/cosmos/amino-js/go/lib/tendermint/iavl"
+	"math/big"
+	"strconv"
 
 	types "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/types"
 
@@ -19,6 +24,7 @@ import (
 	params "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/x/params/types"
 	slashing "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/x/slashing"
 	staking "github.com/cosmos/amino-js/go/lib/cosmos/cosmos-sdk/x/staking/types"
+	evmtypes "github.com/cosmos/amino-js/go/lib/exchain/ethtypes"
 
 	tm_crypto "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/crypto"
 	tm_ed25519 "github.com/cosmos/amino-js/go/lib/tendermint/tendermint/crypto/ed25519"
@@ -266,6 +272,95 @@ func EncodeTx(bz []byte, lengthPrefixed bool) (bz2 []byte, err error) {
 		bz2, err = codec.MarshalBinaryLengthPrefixed(o)
 	} else {
 		bz2, err = codec.MarshalBinaryBare(o)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+func EncodeEthereumTx(bz []byte, lengthPrefixed bool) (bz2 []byte, err error) {
+	type TmpTxData struct {
+		AccountNonce string   `json:"nonce"`
+		Price        string `json:"gasPrice"`
+		GasLimit     string   `json:"gas"`
+		Recipient    string   `json:"to" rlp:"nil"` // nil means contract creation
+		Amount       string `json:"value"`
+		Payload      string   `json:"input"`
+
+		// signature values
+		V string `json:"v"`
+		R string `json:"r"`
+		S string `json:"s"`
+
+		// hash is only used when marshaling to JSON
+		Hash *ethcmn.Hash `json:"hash" rlp:"-"`
+	}
+	var o TmpTxData
+	err = json.Unmarshal(bz, &o)
+	if err != nil {
+		return nil, err
+	}
+
+	err2 := errors.New("invalid params")
+	price, res := new(big.Int).SetString(o.Price, 10)
+	if !res {
+		return nil, err2
+	}
+	amount, res := new(big.Int).SetString(o.Amount, 10)
+	if !res {
+		return nil, err2
+	}
+	v, res := new(big.Int).SetString(o.V, 10)
+	if !res {
+		return nil, err2
+	}
+	r, res := new(big.Int).SetString(o.R, 10)
+	if !res {
+		return nil, err2
+	}
+	s, res := new(big.Int).SetString(o.S, 10)
+	if !res {
+		return nil, err2
+	}
+	nonce, err := strconv.Atoi(o.AccountNonce)
+	if err != nil {
+		return nil, err
+	}
+	gas, err := strconv.Atoi(o.GasLimit)
+	if err != nil {
+		return nil, err
+	}
+	if o.Payload[:2] == "0x" {
+	    o.Payload = o.Payload[2:]
+	}
+	payLoad, err := hex.DecodeString(o.Payload)
+	if err != nil {
+		return nil, err
+	}
+	var tx evmtypes.MsgEthereumTx
+	tx.Data.AccountNonce = uint64(nonce)
+	tx.Data.Price = price
+	tx.Data.GasLimit = uint64(gas)
+	if o.Recipient == "" {
+	    tx.Data.Recipient = nil
+	} else {
+	    addr := ethcmn.HexToAddress(o.Recipient)
+        tx.Data.Recipient = &addr
+	}
+
+	tx.Data.Amount = amount
+	tx.Data.Payload = payLoad
+	tx.Data.V = v
+	tx.Data.R = r
+	tx.Data.S = s
+	tx.Data.Hash = o.Hash
+	if lengthPrefixed {
+		bz2, err = codec.MarshalBinaryLengthPrefixed(tx)
+	} else {
+		bz2, err = codec.MarshalBinaryBare(tx)
 	}
 
 	if err != nil {

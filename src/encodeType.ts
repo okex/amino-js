@@ -11,6 +11,7 @@ export {
     encodeMultiInfo,
     encodeMsg,
     encodeTx,
+    encodeEthereumTx,
     encodeAccount,
     encodeVestingAccount,
     encodeBaseAccount,

@@ -11,6 +11,7 @@ export {
     decodeMultiInfo,
     decodeMsg,
     decodeTx,
+    decodeEthereumTx,
     decodeAccount,
     decodeVestingAccount,
     decodeBaseAccount,

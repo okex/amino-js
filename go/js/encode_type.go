@@ -100,6 +100,14 @@ func EncodeTx(bz []byte, lengthPrefixed bool) (bz2 []byte) {
 	return
 }
 
+func EncodeEthereumTx(bz []byte, lengthPrefixed bool) (bz2 []byte) {
+	bz2, err := src.EncodeEthereumTx(bz, lengthPrefixed)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
 func EncodeAccount(bz []byte, lengthPrefixed bool) (bz2 []byte) {
 	bz2, err := src.EncodeAccount(bz, lengthPrefixed)
 	if err != nil {

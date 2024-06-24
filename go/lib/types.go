@@ -87,4 +87,6 @@ const (
 	TendermintMockGoodEvidence                   = "tendermint/MockGoodEvidence"
 	TendermintMockRandomGoodEvidence             = "tendermint/MockRandomGoodEvidence"
 	TendermintMockBadEvidence                    = "tendermint/MockBadEvidence"
+	EthermintMsgEthereumTx                       = "ethermint/MsgEthereumTx"
+	EthermintTxData                              = "ethermint/TxData"
 )
